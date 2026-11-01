@@ -83,12 +83,60 @@ can_gas |>
     title = "Canadian Gasoline Sales",
     x = NULL, y = "Billions of Litres"
   ) +
+  theme_minimal()
+
+can_gas |>
+  autoplot(Volume) +
+  labs(
+    title = "Canadian Gasoline Sales",
+    x = NULL, y = "Billions of Litres"
+  ) +
   geom_smooth(method = "loess", se = FALSE, color = "blue") +
   theme_minimal()
 
 #I added geom_smooth to the plot to show the trend more clearly. 
 #The trend shows a general increase in gasoline sales over time 
   
-  
+#3
+#The swings grow from 1960 to 1985, then they start to decrease.
+
+can_gas <- can_gas |>
+  mutate(log_volume = log(Volume))
+
+can_gas |>
+  autoplot(log_volume) +
+  labs(
+    title = "Canadian Gasoline Sales (Log Scale)",
+    x = NULL, y = "Log of Billions of Litres"
+  ) +
+  theme_minimal()
+
+#The shape changed to a typical logarithmic curve. The seasonal swings
+#are less pronounced in the log graph, but still noticeable.
+#I don't think the log transformation is a good idea. The only noticeable difference
+#is the shape of the trend.
+
+
+retail_ts <- retail_ts |>
+  filter(series_id == "RSAFSNA") |>
+  mutate(log_sales = log(sales))
+
+retail_ts |>
+  autoplot(sales) +
+  labs(
+    title = "U.S. Retail and Food Services Sales",
+    x = NULL, y = "Log of Millions of Dollars"
+  ) +
+  theme_minimal()
+
+retail_ts |>
+  autoplot(log_sales) +
+  labs(
+    title = "U.S. Retail and Food Services Sales (Log Scale)",
+    x = NULL, y = "Log of Millions of Dollars"
+  ) +
+  theme_minimal()
+
+
 
 
