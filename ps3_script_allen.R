@@ -319,6 +319,21 @@ can_gas_fit |>
 #The p value tells us that we reject the null hypothesis of no autocorrelation
 
 
+gas_cv_fc <- can_gas |>
+  select(Month, Volume) |>
+  stretch_tsibble(.init = 240, .step = 1) |>
+  model(snaive = SNAIVE(Volume),
+        tslm   = TSLM(log(Volume) ~ trend() + season())) |>
+  forecast(h = 1)
+
+gas_cv_fc |>
+  accuracy(can_gas, measures = list(MAE = MAE, RMSE = RMSE))
+
+#5.1a
+#The dates of the first and last forecast are January 1980 and March 2005.
+#snaive forecasts more accurately and the metrics agree based on the low values
+
+
 
 
 
