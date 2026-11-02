@@ -196,5 +196,135 @@ retail_ts |>
 #The not adjusted data is noisier because it has more variation
 #and has the seasonal drop every year.
 
+retail_ts |>
+  filter(series_id == "RSAFSNA") |>
+  gg_season(sales) +
+  labs(
+    title = "Seasonal Pattern in NSA Retail Sales",
+    y = "Millions of dollars"
+  ) +
+  theme_minimal()
+
+retail_ts |>
+  filter(series_id == "RSAFS") |>
+  gg_season(sales) +
+  labs(
+    title = "Seasonal Pattern in SA Retail Sales",
+    y = "Millions of dollars"
+  ) +
+  theme_minimal()
+
+#4.1b
+#The seasonally adjusted series has a much smoother line and trend compared
+#to the NSA series. You can see the variation by the amount of dips in the NSA
+#data.
+
+can_gas |>
+  gg_season(log_volume) +
+  labs(
+    title = "Seasonal Pattern in Canadian Gasoline Sales (Log Scale)",
+    y = "Log of Billions of Litres"
+  ) +
+  theme_minimal()
+
+#4.1c
+#I can see a seasonal decline starting in the Spring, continuing through
+#the Summer, then a rise in the Fall, and then declining again in the winter.
+#This makes sense because of things such as heating a house during the cold months
+
+
+can_gas |>
+  gg_subseries(log_volume) +
+  labs(
+    title = "Subseries Plot: Canadian Gas Production",
+    y = "log(Volume)"
+  ) 
+
+
+retail_nsa_x13 <- retail_ts |>
+  filter(series_id == "RSAFSNA") |>
+  model(x13 = X_13ARIMA_SEATS(sales)) |>
+  components()
+
+retail_nsa_x13 |> autoplot()
+
+#4.3a
+#The month with the largest seasonal factor seems to be December.
+#It is roughly 0.2 over the trend and the size of the swings seem
+#to decrease over time.
+
+sa_compare <- retail_nsa_x13 |>
+  as_tibble() |>
+  select(Month, mine = season_adjust) |>
+  left_join(
+    retail_ts |>
+      filter(series_id == "RSAFS") |>
+      as_tibble() |>
+      transmute(Month, census = sales),
+    by = "Month"
+  ) |>
+  mutate(pct_diff = 100 * (log(mine) - log(census)))
+
+sa_compare |>
+  ggplot(aes(x = Month, y = pct_diff)) +
+  geom_line() +
+  labs(
+    title = "My X-13 Seasonal Adjustment Minus the Census Bureau's",
+    x = NULL, y = "Difference (%)"
+  ) +
+  theme_minimal()
+
+#4.3b
+#The appear to be fairly similar. The big difference is 2020 to 2023.
+
+
+can_gas_fit <- can_gas |>
+  model(TSLM(log_volume ~ trend() + season()))
+
+report(can_gas_fit)
+
+
+can_gas_fit |>
+  tidy() |>
+  select(term, estimate, std.error, statistic, p.value) |>
+  knitr::kable(digits = 3)
+
+#4.4a
+#The estimated average monthly growth rate of gas production is 0.4%
+#The month with the most significant seasonal effect is June
+
+
+can_gas_fit |>
+  augment() |>
+  ggplot(aes(x = Month)) +
+  geom_line(aes(y = log_volume, color = "Actual")) +
+  geom_line(aes(y = .fitted, color = "Fitted")) +
+  labs(title = "Linear Trend + Seasonal Dummies Fit: Canadian Gas Production",
+       y = "log(Volume)", color = NULL) +
+  theme_minimal()
+
+#4.4b
+#the tracks fit the actual series not well seeing as the actual 
+#line is not linear
+
+
+can_gas_fit |> gg_tsresiduals()
+
+can_gas_fit |>
+  augment() |>
+  features(.innov, ljung_box, lag = 24)
+
+#4.4c
+#The residuals do not look like white noise.
+#The p value tells us that we reject the null hypothesis of no autocorrelation
+
+
+
+
+
+
+
+
+
 
 
