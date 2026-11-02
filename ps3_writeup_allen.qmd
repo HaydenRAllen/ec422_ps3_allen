@@ -352,7 +352,8 @@ snaive MAE is 0.562 and RMSE is 0.702. tslm MAE is 2.09 and RMSE is 2.42 the tsl
 This is due to the rolling window only using more recent data rather than using all data, which would skew results.
 
 
-
+ 
+ 
 **Reflection**
 
 The Ljung Box test had a p value of 0 meaning there was a lot of autocorrelation in the residuals and they did not behave like white noise. The forecast showed that the snaive model was better than the tslm model. The snaive model had lower MAE and RMSE values, this suggests that trend and model were missing important patterns in the data. I would expect a better model to have residuals with little to no effect on the line.
