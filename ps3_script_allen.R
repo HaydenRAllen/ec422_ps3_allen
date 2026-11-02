@@ -58,6 +58,8 @@ can_gas_q <- can_gas |>
 head(can_gas_q)
 
 can_gas_q |> autoplot(Volume)  
+
+#2.6d
 #Averaging smooths out the data and makes it harder to see trends.
 #It does appear to be seasonal. You can see that the volume is higher 
 #in the summer quarters and lower in the winter quarters.
@@ -72,6 +74,7 @@ retail_ts |>
   ) +
   theme_minimal()
 
+#2.7b
 #At the end of every year, there is a drop. It seems to be a steep 
 #rise in summer, then a drop through Fall and Winter. The SA series
 #is smoother and has less variation than the NSA series. The trend 
@@ -94,10 +97,11 @@ can_gas |>
   geom_smooth(method = "loess", se = FALSE, color = "blue") +
   theme_minimal()
 
+#2.7d
 #I added geom_smooth to the plot to show the trend more clearly. 
 #The trend shows a general increase in gasoline sales over time 
   
-#3
+#3.1a
 #The swings grow from 1960 to 1985, then they start to decrease.
 
 can_gas <- can_gas |>
@@ -111,25 +115,26 @@ can_gas |>
   ) +
   theme_minimal()
 
+#3.1b
 #The shape changed to a typical logarithmic curve. The seasonal swings
 #are less pronounced in the log graph, but still noticeable.
 #I don't think the log transformation is a good idea. The only noticeable difference
 #is the shape of the trend.
 
 
-retail_ts <- retail_ts |>
+retail_ts_filtered <- retail_ts |>
   filter(series_id == "RSAFSNA") |>
   mutate(log_sales = log(sales))
 
-retail_ts |>
+retail_ts_filtered |>
   autoplot(sales) +
   labs(
     title = "U.S. Retail and Food Services Sales",
-    x = NULL, y = "Log of Millions of Dollars"
+    x = NULL, y = "Millions of Dollars"
   ) +
   theme_minimal()
 
-retail_ts |>
+retail_ts_filtered |>
   autoplot(log_sales) +
   labs(
     title = "U.S. Retail and Food Services Sales (Log Scale)",
@@ -137,6 +142,7 @@ retail_ts |>
   ) +
   theme_minimal()
 
+#3.1c
 #The case for logging this series is stronger because it becomes more linear
 #than when logging the other series. 
 
@@ -166,9 +172,29 @@ can_gas |>
   ) +
   theme_minimal()
 
+#3.2
 #the log difference approximation is more appropriate for this 
 #series because it is less affected by the large swings in the data. 
 
+
+retail_ts <- retail_ts |>
+  group_by_key() |>
+  mutate(growth_mom = 100 * difference(log(sales))) |>
+  ungroup()
+
+retail_ts |>
+  autoplot(growth_mom, aes(color = series_id)) +
+  labs(
+    title = "Month-over-Month Growth: SA vs. NSA Retail Sales",
+    x = NULL, y = "Growth rate (%)", color = "Series"
+  ) +
+  theme_minimal()
+
+
+#3.3
+#The adjusted series is much smoother and has less extreme swings.
+#The not adjusted data is noisier because it has more variation
+#and has the seasonal drop every year.
 
 
 
