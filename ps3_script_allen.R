@@ -334,11 +334,39 @@ gas_cv_fc |>
 #snaive forecasts more accurately and the metrics agree based on the low values
 
 
+errs <- gas_cv_fc |>
+  as_tibble() |>
+  left_join(as_tibble(can_gas) |> select(Month, actual = Volume),
+            by = "Month") |>
+  mutate(e = actual - .mean) |>
+  select(Month, .model, e) |>
+  pivot_wider(names_from = .model, values_from = e) |>
+  na.omit()
+
+forecast::dm.test(errs$snaive, errs$tslm, h = 1, power = 1)
+
+#5.2a
+#The DM statistic is -31.278 and the p-value is 2.2e-16
+#The p value tell us there is a statistical significance in the difference
+#between the models
 
 
+gas_cv_fc_rw <- can_gas |>
+  select(Month, Volume) |>
+  slide_tsibble(.size = 240, .step = 1) |>
+  model(snaive = SNAIVE(Volume),
+        tslm   = TSLM(log(Volume) ~ trend() + season())) |>
+  forecast(h = 1)
 
+gas_cv_fc_rw |>
+  accuracy(can_gas, measures = list(MAE = MAE, RMSE = RMSE))
 
-
+#5.3a
+#snaive MAE is 0.562 and RMSE is 0.702.
+#tslm MAE is 2.09 and RMSE is 2.42
+#the tslm model's accuracy changed more when switching methods.
+#this is due to the rolling window only using more recent data
+#rather than using all data, which would skew results.
 
 
 
