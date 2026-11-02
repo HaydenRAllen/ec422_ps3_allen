@@ -137,6 +137,38 @@ retail_ts |>
   ) +
   theme_minimal()
 
+#The case for logging this series is stronger because it becomes more linear
+#than when logging the other series. 
+
+can_gas <- can_gas |>
+  mutate(
+    growth_direct = 100 * difference(Volume) / lag(Volume),
+    growth_logdiff = 100 * difference(log_volume)
+  )
+
+can_gas |>
+  autoplot(growth_direct) +
+  labs(
+    title = "Canadian Gasoline Sales Growth (Direct)",
+    x = NULL, y = "Percent"
+  ) +
+  theme_minimal()
+
+
+can_gas <- can_gas |>
+  mutate(growth_gap = abs(growth_direct - growth_logdiff))
+
+can_gas |>
+  autoplot(growth_gap) +
+  labs(
+    title = "Difference Between Growth Measures",
+    x = NULL, y = "Percent"
+  ) +
+  theme_minimal()
+
+#the log difference approximation is more appropriate for this 
+#series because it is less affected by the large swings in the data. 
+
 
 
 
